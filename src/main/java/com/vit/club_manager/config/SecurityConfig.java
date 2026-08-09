@@ -22,10 +22,16 @@ public class SecurityConfig {
                 // Make both registration AND fetching users public
                 .requestMatchers("/api/users/register").permitAll()
                 .requestMatchers("/api/users").permitAll() 
+                .requestMatchers("/api/teams/**").permitAll()
                 
                 .anyRequest().authenticated()
             );
         
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.security.crypto.password.PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 }

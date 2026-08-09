@@ -16,16 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
 @Service // Tells Spring IoC Container to manage this class
 public class UserService {
 
     private final UsersRepository usersRepository;
     private final RolesRepository rolesRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // Constructor Injection
-    public UserService(UsersRepository usersRepository, RolesRepository rolesRepository) {
+    public UserService(UsersRepository usersRepository, RolesRepository rolesRepository, PasswordEncoder passwordEncoder) {
         this.usersRepository = usersRepository;
         this.rolesRepository = rolesRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     //  It guarantees that a group of database operations is "All or Nothing.
@@ -34,27 +39,37 @@ public class UserService {
     public UserResponseDTO registerUser(UserRegistrationDTO dto) {
 
         // 1. Data Sanitization
-
         String safeEmail = dto.getEmail().trim().toLowerCase();
         String safeUsername = dto.getUsername().trim();
+        String safeRegNumber = dto.getRegistrationNumber().trim(); // Sanitize reg number too
 
         // 2. Business Rule: Check Uniqueness (Fail Fast)
         if (usersRepository.existsByEmail(safeEmail)) {
-            throw new UserAlreadyExistsException("A user with this email is already registered.");
+            throw new UserAlreadyExistsException(
+                "A user with this email is already registered.",
+                "Please use a different email address to register." // Pass the details here!
+            );
         }
 
-        //3. Create the Entity
+        if (usersRepository.existsByRegistrationNumber(safeRegNumber)) {
+            throw new UserAlreadyExistsException(
+                "A user with the registration number " + safeRegNumber + " is already registered.",
+                "Please verify your registration number or contact the club administrator." // Pass the details here!
+            );
+        }
+
+        // 3. Create the Entity
         Users newUser = new Users();
         newUser.setUserName(safeUsername);
         newUser.setEmail(safeEmail);
-        newUser.setRegistrationNumber(dto.getRegistrationNumber());
+        newUser.setRegistrationNumber(safeRegNumber);
         
         // 4. Hash the password (For now, we store plain text until we add Spring Security)
-        newUser.setPasswordHash(dto.getPassword()); 
+       newUser.setPasswordHash(passwordEncoder.encode(dto.getPassword())); 
 
         // 5. Business Rule: Force Default Role
         Roles defaultRole = rolesRepository.findByRoleName(AppConstants.ROLE_MEMBER);
-        newUser.setRole(defaultRole);
+        newUser.setRole(defaultRole);   
 
         // 6. Save to Database
         Users savedUser = usersRepository.save(newUser);
