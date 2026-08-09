@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 public interface UsersRepository extends JpaRepository<Users, Integer> {
     
     // Checks if a username is already taken when registering
-    boolean existsByUserName(String userName);
+    boolean existsByEmail(String email);
     
-    // Useful for logging a user in later
-    Users findByUserName(String userName);
+    boolean existsByRegistrationNumber(String registrationNumber);
+
 }

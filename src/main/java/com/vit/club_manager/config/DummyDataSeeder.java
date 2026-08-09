@@ -48,35 +48,39 @@ public class DummyDataSeeder implements CommandLineRunner {
         Teams eventTeam = teamsRepository.findByTeamName(AppConstants.TEAM_EVENT);
 
         // 2. Create the Global Club Admin (No Team)
-        createUser("Sanjay Vinod K", adminRole, null);
+        createUser("Sanjay Vinod K", "sanjay@vitbhopal.ac.in", "23BCE11016", adminRole, null);
         logger.info("Created Global Admin");
 
         // 3. Create Teams
-        createUser("Sujal", leadRole, marketingTeam);
-        createUser("Kush", coLeadRole, marketingTeam);
+        createUser("Sujal", "sujal@vitbhopal.ac.in", "23BCE1001", leadRole, marketingTeam);
+        createUser("Kush", "kush@vitbhopal.ac.in", "23BCE1002", coLeadRole, marketingTeam);
 
-        createUser("Himanshu", leadRole, photographyTeam);
-        createUser("Vedansh", coLeadRole, photographyTeam);
+        createUser("Himanshu", "himanshu@vitbhopal.ac.in", "23BCE1003", leadRole, photographyTeam);
+        createUser("Vedansh", "vedansh@vitbhopal.ac.in", "23BCE1004", coLeadRole, photographyTeam);
 
-        createUser("Ronit", leadRole, eventTeam);
-        createUser("Apoorv", coLeadRole, eventTeam);
+        createUser("Ronit", "ronit@vitbhopal.ac.in", "23BCE1005", leadRole, eventTeam);
+        createUser("Apoorv", "apoorv@vitbhopal.ac.in", "23BCE1006", coLeadRole, eventTeam);
 
         // 4. Create Regular Members
-        createUser("Marketer1", memberRole, marketingTeam);
-        createUser("Marketer2", memberRole, marketingTeam);
+        createUser("Marketer1", "m1@vitbhopal.ac.in", "23BCE1007", memberRole, marketingTeam);
+        createUser("Marketer2", "m2@vitbhopal.ac.in", "23BCE1008", memberRole, marketingTeam);
         
-        createUser("Photographer1", memberRole, photographyTeam);
-        createUser("Photographer2", memberRole, photographyTeam);
+        createUser("Photographer1", "p1@vitbhopal.ac.in", "23BCE1009", memberRole, photographyTeam);
+        createUser("Photographer2", "p2@vitbhopal.ac.in", "23BCE1010", memberRole, photographyTeam);
         
-        createUser("EventStaff1", memberRole, eventTeam);
-        createUser("EventStaff2", memberRole, eventTeam);
+        createUser("EventStaff1", "e1@vitbhopal.ac.in", "23BCE1011", memberRole, eventTeam);
+        createUser("EventStaff2", "e2@vitbhopal.ac.in", "23BCE1012", memberRole, eventTeam);
 
         logger.info("Dummy data seeding complete!");
     }
 
-    private void createUser(String name, Roles role, Teams team) {
+    // Updated helper method to include the required fields
+    private void createUser(String name, String email, String regNumber, Roles role, Teams team) {
         Users user = new Users();
         user.setUserName(name); 
+        user.setEmail(email);
+        user.setRegistrationNumber(regNumber);
+        user.setPasswordHash("dummyPassword123"); // Hardcoded password for test users
         user.setRole(role); 
         user.setTeam(team); 
         usersRepository.save(user);
