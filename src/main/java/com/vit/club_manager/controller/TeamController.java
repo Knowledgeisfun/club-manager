@@ -24,6 +24,7 @@ public class TeamController {
     }
 
     @PostMapping
+    @SuppressWarnings("null")
     public ResponseEntity<Teams> createTeam(@RequestBody Teams team) {
         Teams savedTeam = teamsRepository.save(team);
         return new ResponseEntity<>(savedTeam, HttpStatus.CREATED);
