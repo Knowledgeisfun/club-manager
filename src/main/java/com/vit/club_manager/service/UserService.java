@@ -4,19 +4,23 @@ import com.vit.club_manager.config.AppConstants;
 import com.vit.club_manager.dto.UserRegistrationDTO;
 import com.vit.club_manager.dto.UserResponseDTO;
 import com.vit.club_manager.model.Roles;
+import com.vit.club_manager.model.Teams;
 import com.vit.club_manager.model.Users;
+import com.vit.club_manager.exception.ResourceNotFoundException;
 import com.vit.club_manager.exception.UserAlreadyExistsException;
 import com.vit.club_manager.repository.RolesRepository;
 import com.vit.club_manager.repository.UsersRepository;
+import com.vit.club_manager.repository.TeamsRepository;
+
 
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 
 @Service // Tells Spring IoC Container to manage this class
@@ -25,12 +29,17 @@ public class UserService {
     private final UsersRepository usersRepository;
     private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TeamsRepository teamRepository; 
 
     // Constructor Injection
-    public UserService(UsersRepository usersRepository, RolesRepository rolesRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UsersRepository usersRepository, 
+                       RolesRepository rolesRepository, 
+                       org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+                       TeamsRepository teamRepository) { 
         this.usersRepository = usersRepository;
         this.rolesRepository = rolesRepository;
         this.passwordEncoder = passwordEncoder;
+        this.teamRepository = teamRepository; 
     }
 
     //  It guarantees that a group of database operations is "All or Nothing.
@@ -77,6 +86,34 @@ public class UserService {
         // 7. Convert to DTO and return
         return mapToResponseDTO(savedUser);
     }
+
+    @Transactional
+    public UserResponseDTO assignUserToTeam(Integer userId, Integer teamId) {
+        
+        // 1. Find the user (or throw 404)
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found", 
+                        "No user exists with the ID: " + userId));
+
+        // 2. Find the team (or throw 404)
+        Teams team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Team not found", 
+                        "No team exists with the ID: " + teamId));
+
+        // 3. Assign the team to the user
+        user.setTeam(team); 
+
+        // 4. Save and return the DTO
+        Users updatedUser = usersRepository.save(user);
+        
+        // Assuming you have a method to convert the entity to a DTO
+        // If not, just return a success string or the raw entity for now.
+        return mapToResponseDTO(updatedUser); 
+    }
+    
+    
 
     public List<UserResponseDTO> getAllUsers() {
         // 1. Fetch all users from the database

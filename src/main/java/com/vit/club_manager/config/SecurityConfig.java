@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/register").permitAll()
                 .requestMatchers("/api/users").permitAll() 
                 .requestMatchers("/api/teams/**").permitAll()
+                .requestMatchers("/api/users/*/team/*").permitAll()
                 
                 .anyRequest().authenticated()
             );

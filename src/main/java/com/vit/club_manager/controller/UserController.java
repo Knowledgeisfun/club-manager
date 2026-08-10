@@ -37,4 +37,14 @@ public class UserController {
         List<UserResponseDTO> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
+
+    // Assign a user to a team
+    @PutMapping("/{userId}/team/{teamId}")
+    public ResponseEntity<UserResponseDTO> assignTeamToUser(
+            @PathVariable Integer userId, 
+            @PathVariable Integer teamId) {
+        
+        UserResponseDTO updatedUser = userService.assignUserToTeam(userId, teamId);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
 }
