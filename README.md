@@ -5,12 +5,14 @@ A robust, monolithic Spring Boot REST API designed to manage university club ope
 ## 🏗️ Architecture & Design
 This project follows a strict layered monolithic architecture, emphasizing clean code, maintainability, and enterprise Java standards. 
 
-*   **Framework:** Spring Boot (Java)
+*   **Framework:** Spring Boot (Java 17+)
 *   **Data Persistence:** Spring Data JPA & Hibernate
-*   **Database:** MySQL
+*   **Database:** MySQL (Production) / H2 (In-Memory Testing)
+*   **Testing Stack:** JUnit 5, Mockito, & Spring MockMvc
+*   **Build Tool:** Maven
 
-## 🚀 Current Progress: Core API & Security
-The application has evolved from a foundational data layer to a fully functional, secure REST API, implementing the complete request lifecycle from Controller to Database.
+## 🚀 Current Progress: Core API, Security & Testing
+The application has evolved from a foundational data layer to a fully functional, secure REST API, implementing the complete request lifecycle from Controller to Database, backed by a robust testing suite.
 
 ### 🗄️ The Data Layer
 *   Designed relational database tables using `@Entity` with strict data constraints (`nullable = false`), establishing correct cardinality (`@ManyToOne`) between `Users`, `Roles`, `Teams`, and `Messages`.
@@ -43,6 +45,12 @@ The application has evolved from a foundational data layer to a fully functional
 *   Integrated `BCryptPasswordEncoder` to perform one-way cryptographic hashing on user passwords prior to database persistence, neutralizing database-breach vulnerabilities.
 *   Disabled CSRF (Cross-Site Request Forgery) protection to accommodate stateless REST API interactions (Postman/Mobile).
 *   Configured targeted endpoint authorization (`permitAll()` for public registration and team paths) while securing the broader application context.
+
+### 🧪 Testing & Quality Assurance
+*   Implemented comprehensive unit testing to ensure code reliability and fail-fast behavior across architectural layers following the AAA (Arrange, Act, Assert) pattern.
+*   **Service Layer Isolation:** Utilized **Mockito** (`@Mock`, `@InjectMocks`) to test business logic in isolation. Verified successful state changes and expected failure scenarios (e.g., `ResourceNotFoundException`) without relying on a live database.
+*   **Web Layer Simulation:** Leveraged Spring Boot's `@WebMvcTest` and **MockMvc** to simulate HTTP requests and test the `UserController` and `TeamController`.
+*   **API Contract Verification:** Verified correct endpoint routing, JSON payload serialization/deserialization, proper HTTP status codes (200 OK, 201 Created), and validated that `@Valid` constraints properly trigger 400 Bad Request responses.
 
 ---
 
