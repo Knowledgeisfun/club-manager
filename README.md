@@ -54,7 +54,7 @@ The application has evolved into a fully secured, stateless, role-aware REST API
 
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/users/register` | Public | Register a new user |
+| `POST` | `/api/users/register` | Bearer Token  | Register a new user |
 | `POST` | `/api/auth/login` | Public | Authenticate credentials & return JWT |
 | `GET` | `/api/users` | Bearer Token | Fetch all registered users |
 | `GET` | `/api/teams` | Bearer Token | List all teams |
