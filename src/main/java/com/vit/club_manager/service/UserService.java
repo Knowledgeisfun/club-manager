@@ -112,6 +112,18 @@ public class UserService {
         // If not, just return a success string or the raw entity for now.
         return mapToResponseDTO(updatedUser); 
     }
+
+    public void changePassword(String email, String rawNewPassword) {
+        Users user = usersRepository.findByEmail(email)
+               .orElseThrow(() -> new ResourceNotFoundException("User not found", "No user exists with the provided email."));
+        // Hash the new password
+        user.setPasswordHash(passwordEncoder.encode(rawNewPassword));
+        
+        // Flip the flag so they never get trapped on this screen again!
+        user.setRequiresPasswordChange(false);
+        
+        usersRepository.save(user);
+    }
     
     
 

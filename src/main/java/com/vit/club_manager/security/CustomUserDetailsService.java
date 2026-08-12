@@ -23,19 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         
-        // 1. Find the user in our MySQL database
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        // 2. Translate our custom Role into a Spring Security "Authority"
-        // VERY IMPORTANT: Spring Security requires roles to start with the prefix "ROLE_"
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().getRoleName().toUpperCase());
-
-        // 3. Return Spring Security's built-in User object
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),          // The username they log in with
-                user.getPasswordHash(),       // The BCrypt hashed password from the DB
-                Collections.singletonList(authority) // Their permissions
-        );
+        // Return our custom wrapper holding the entire user object!
+        return new CustomUserDetails(user);
     }
 }

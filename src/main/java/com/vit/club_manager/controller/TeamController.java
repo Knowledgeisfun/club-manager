@@ -4,6 +4,7 @@ import com.vit.club_manager.model.Teams;
 import com.vit.club_manager.repository.TeamsRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class TeamController {
 
     @PostMapping
     @SuppressWarnings("null")
+    @PreAuthorize("hasAuthority('ROLE_CLUBADMIN')") // Notice: CLUBADMIN without the underscore!
     public ResponseEntity<Teams> createTeam(@RequestBody Teams team) {
         Teams savedTeam = teamsRepository.save(team);
         return new ResponseEntity<>(savedTeam, HttpStatus.CREATED);

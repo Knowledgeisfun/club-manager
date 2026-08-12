@@ -1,7 +1,10 @@
 package com.vit.club_manager.controller;
 
+import com.vit.club_manager.security.CustomUserDetails;
 import com.vit.club_manager.dto.AuthRequestDTO;
 import com.vit.club_manager.dto.AuthResponseDTO;
+import com.vit.club_manager.model.Users;
+import com.vit.club_manager.repository.UsersRepository;
 import com.vit.club_manager.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,14 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    // Spring's built-in tool that triggers your CustomUserDetailsService
     private final AuthenticationManager authenticationManager;
-    
-    // Your custom token generator
     private final JwtUtil jwtUtil;
-
+    
+    // Notice: UsersRepository is completely gone!
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -27,9 +29,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO authRequest) {
-        
-        // 1. Tell Spring to verify the email and password against the database
-        // If the password is wrong, this line will immediately throw an Exception and stop.
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authRequest.getEmail(), 
@@ -37,13 +36,10 @@ public class AuthController {
                 )
         );
 
-        // 2. If it succeeds, grab the UserDetails object that your CustomUserDetailsService created
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        String jwt = jwtUtil.generateToken(customUserDetails);
+        boolean requiresChange = customUserDetails.getUser().isRequiresPasswordChange();
 
-        // 3. Generate the JWT using their email
-        String jwt = jwtUtil.generateToken(userDetails.getUsername());
-
-        // 4. Return the token to the frontend
-        return ResponseEntity.ok(new AuthResponseDTO(jwt));
+        return ResponseEntity.ok(new AuthResponseDTO(jwt, requiresChange));
     }
 }

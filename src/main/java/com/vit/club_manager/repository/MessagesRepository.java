@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface MessagesRepository extends JpaRepository<Messages, Integer> {
     
-    // This allows you to easily fetch all messages for a specific team!
-    List<Messages> findByTeam_TeamId(Integer teamId);
+    // Fetch all messages for a specific channel, sorted chronologically from oldest to newest
+    List<Messages> findByChannel_ChannelIdOrderBySentAtAsc(Integer channelId);
 }

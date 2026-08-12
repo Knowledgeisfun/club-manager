@@ -13,27 +13,22 @@ public class Messages {
     @Column(name = "message_id")
     private Integer messageId;
 
-    @Column(nullable = false, length = 250)
+    @Column(nullable = false, length = 500) // Slightly increased length for chat messages
     private String content;
 
     @CreationTimestamp
     @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
 
-    // Foreign Key: sender_id
+    // Foreign Key: Who sent the message
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private Users sender;
 
-    // Foreign Key: team_id (Corrected mapped reference)
+    // Foreign Key: Which channel does this message belong to? (Global, Team, or Leadership)
     @ManyToOne
-    @JoinColumn(name = "team_id")
-    private Teams team;
-
-    // Foreign Key: role_id (Corrected mapped reference)
-    @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channels channel;
 
     public Messages() {}
 
@@ -50,9 +45,6 @@ public class Messages {
     public Users getSender() { return sender; }
     public void setSender(Users sender) { this.sender = sender; }
 
-    public Teams getTeam() { return team; }
-    public void setTeam(Teams team) { this.team = team; }
-
-    public Roles getRole() { return role; }
-    public void setRole(Roles role) { this.role = role; }
+    public Channels getChannel() { return channel; }
+    public void setChannel(Channels channel) { this.channel = channel; }
 }

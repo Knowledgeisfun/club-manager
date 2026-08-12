@@ -60,4 +60,18 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    // 3. Handle security and permission denials from our service bouncer
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ErrorResponseDTO> handleSecurityException(SecurityException ex) {
+        
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                HttpStatus.FORBIDDEN.value(),
+                "Access Denied",
+                ex.getMessage(),
+                "You do not have the required permissions for this action."
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
 }

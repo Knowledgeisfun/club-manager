@@ -7,10 +7,13 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component // Tells Spring to manage this class so we can inject it anywhere
@@ -26,12 +29,19 @@ public class JwtUtil {
     private long JWT_EXPIRATION;
 
     // 1. CREATE THE TOKEN (The ID Badge)
-    public String generateToken(String email) {
+    public String generateToken(UserDetails userDetails) {
+        CustomUserDetails customUser = (CustomUserDetails) userDetails;
+        
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", customUser.getUser().getRole().getRoleName());
+        claims.put("teamId", customUser.getUser().getTeam() != null ? customUser.getUser().getTeam().getTeamId() : null);
+
         return Jwts.builder()
-                .setSubject(email) // We use the email as the unique identifier
+                .setClaims(claims)
+                .setSubject(customUser.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256) // Cryptographically sign it
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION)) // Uses your properties value!
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

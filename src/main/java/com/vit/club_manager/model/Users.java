@@ -24,6 +24,9 @@ public class Users {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean requiresPasswordChange = true;
+
     // Foreign Key: role_id
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
@@ -58,4 +61,7 @@ public class Users {
 
     public Teams getTeam() { return team; }
     public void setTeam(Teams team) { this.team = team; }
+
+    public boolean isRequiresPasswordChange() { return requiresPasswordChange; }
+    public void setRequiresPasswordChange(boolean requiresPasswordChange) { this.requiresPasswordChange = requiresPasswordChange; }
 }
