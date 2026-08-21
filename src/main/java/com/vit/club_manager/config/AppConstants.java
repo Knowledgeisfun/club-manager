@@ -2,11 +2,11 @@ package com.vit.club_manager.config;
 
 public class AppConstants {
     
-    // Role Constants
-    public static final String ROLE_ADMIN = "clubadmin";
-    public static final String ROLE_LEAD = "teamlead";
-    public static final String ROLE_CO_LEAD = "colead";
-    public static final String ROLE_MEMBER = "member";
+    // Role Constants - MATCHED TO DATABASE FORMAT
+    public static final String ROLE_ADMIN = "CLUB_ADMIN";
+    public static final String ROLE_LEAD = "TEAM_LEAD";
+    public static final String ROLE_CO_LEAD = "CO_LEAD";
+    public static final String ROLE_MEMBER = "MEMBER";
 
     // Team Constants
     public static final String TEAM_MARKETING = "marketing";

@@ -24,11 +24,16 @@ public class CustomUserDetails implements UserDetails {
 
     // --- Spring Security Required Methods Below ---
 
-    @Override
+   @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().getRoleName().toUpperCase())
-        );
+        String roleName = user.getRole().getRoleName().toUpperCase();
+        
+        // Only add "ROLE_" if the database string doesn't already have it
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+        
+        return Collections.singletonList(new SimpleGrantedAuthority(roleName));
     }
 
     @Override

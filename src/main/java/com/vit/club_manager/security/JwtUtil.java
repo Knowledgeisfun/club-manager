@@ -16,12 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-@Component // Tells Spring to manage this class so we can inject it anywhere
+@Component
 public class JwtUtil {
 
-    // This is the master key. If a hacker gets this, they can forge their own tokens. s
-    // This is a mathematically secure 256-bit Hex string required by the HS256 algorithm.
-    // Spring injects the value from application.properties right here!
     @Value("${jwt.secret}")
     private String SECRET_KEY;
     
@@ -32,15 +29,22 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         CustomUserDetails customUser = (CustomUserDetails) userDetails;
         
+        // Normalize role name to ensure it is uppercase and has the 'ROLE_' prefix
+        String rawRole = customUser.getUser().getRole().getRoleName();
+        String normalizedRole = (rawRole != null) ? rawRole.toUpperCase() : "MEMBER";
+        if (!normalizedRole.startsWith("ROLE_")) {
+            normalizedRole = "ROLE_" + normalizedRole;
+        }
+
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", customUser.getUser().getRole().getRoleName());
+        claims.put("role", normalizedRole);
         claims.put("teamId", customUser.getUser().getTeam() != null ? customUser.getUser().getTeam().getTeamId() : null);
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(customUser.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION)) // Uses your properties value!
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -50,7 +54,7 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // 3. VERIFY THE TOKEN (Check if the signature matches and it hasn't expired)
+    // 3. VERIFY THE TOKEN
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -59,7 +63,7 @@ public class JwtUtil {
                 .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            return false; // If it's expired or forged, the library throws an exception
+            return false;
         }
     }
 

@@ -28,7 +28,6 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    // This simply tells Spring: "Please take your internal AuthenticationManager and make it available for my AuthController to use."
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -37,40 +36,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. ADDED THIS: Enable CORS using the custom configuration source defined below
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // 2. Disable CSRF (Cross-Site Request Forgery) protection. 
-            // This is required so Postman/Android/React can send POST requests without a special token.
             .csrf(csrf -> csrf.disable())
-            
-            // 3. Configure endpoint rules
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/users/register").permitAll()
+                // 1. ADDED THIS: Explicitly allow OPTIONS preflight requests to bypass security
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() 
+                
+                // ONLY login is public. Registration requires authentication now!
+                .requestMatchers("/api/auth/login").permitAll()
                 .anyRequest().authenticated()
             )
-
-            // 4. VERY IMPORTANT: Tell Spring to stop using stateful sessions
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // 5. Put our Bouncer at the front door, right before Spring's default login filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
 
-    // ADDED THIS BEAN: Configures the CORS rules to allow your Vite app on port 5173
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow your Vite development server
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://127.0.0.1:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        
+        // 2. EXPLICIT ORIGIN: Allow your local React frontend
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); 
+        
+        // 3. ALLOWED METHODS: Added PATCH and made sure OPTIONS is here
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // 4. ALLOWED HEADERS: Added standard headers required by modern browsers
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "bypass-tunnel-reminder", "Accept", "Origin"));
+        
         configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Apply this configuration to all API routes
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

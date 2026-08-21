@@ -23,14 +23,16 @@ public class MessageController {
     }
 
     @GetMapping("/{channelId}/messages")
-    @PreAuthorize("hasAuthority('ROLE_CLUBADMIN') or hasAuthority('ROLE_TEAMLEAD') or hasAuthority('ROLE_COLEAD') or hasAuthority('ROLE_MEMBER') or hasAuthority('MEMBER')")
+    // FIX: Let all logged-in users fetch messages (Frontend hides rooms they shouldn't click)
+    @PreAuthorize("isAuthenticated()") 
     public ResponseEntity<List<MessageResponseDTO>> getChannelMessages(@PathVariable Integer channelId) {
         List<MessageResponseDTO> messages = messageService.getMessagesByChannel(channelId);
         return ResponseEntity.ok(messages);
     }
 
     @PostMapping("/{channelId}/messages")
-    @PreAuthorize("hasAuthority('ROLE_CLUBADMIN') or hasAuthority('ROLE_TEAMLEAD') or hasAuthority('ROLE_COLEAD') or hasAuthority('ROLE_MEMBER') or hasAuthority('MEMBER')")
+    // FIX: Let all logged-in users try to post. The Service will block them if they lack permissions!
+    @PreAuthorize("isAuthenticated()") 
     public ResponseEntity<MessageResponseDTO> postMessage(
             @PathVariable Integer channelId, 
             @RequestBody @Valid MessageRequestDTO requestDTO) {
@@ -45,6 +47,4 @@ public class MessageController {
         
         return ResponseEntity.status(201).body(savedMessage);
     }
-    
-    // REMOVED duplicate getAllChannels() here so it's exclusively handled by your Channel Controller/Service structure.
 }

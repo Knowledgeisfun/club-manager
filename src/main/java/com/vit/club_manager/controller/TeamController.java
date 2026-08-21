@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/teams")
+@CrossOrigin(origins = "http://localhost:5173") // ADDED THIS!
 public class TeamController {
 
     private final TeamsRepository teamsRepository;
@@ -20,13 +21,14 @@ public class TeamController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()") // Anyone logged in should be able to see the team list
     public ResponseEntity<List<Teams>> getAllTeams() {
         return new ResponseEntity<>(teamsRepository.findAll(), HttpStatus.OK);
     }
 
     @PostMapping
-    @SuppressWarnings("null")
-    @PreAuthorize("hasAuthority('ROLE_CLUBADMIN')") // Notice: CLUBADMIN without the underscore!
+    // FIXED: Added the underscore!
+    @PreAuthorize("hasAnyAuthority('ROLE_CLUB_ADMIN', 'ROLE_CLUBADMIN', 'ROLE_ADMIN')") 
     public ResponseEntity<Teams> createTeam(@RequestBody Teams team) {
         Teams savedTeam = teamsRepository.save(team);
         return new ResponseEntity<>(savedTeam, HttpStatus.CREATED);

@@ -43,9 +43,7 @@ public class MessageService {
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
-
-    // 2. Post message and return safe DTO
-    // 2. Post message and return safe DTO
+// 2. Post message and return safe DTO
     @Transactional
     public MessageResponseDTO postMessage(Integer channelId, String userEmail, String content) {
         Channels channel = channelsRepository.findById(channelId)
@@ -58,30 +56,24 @@ public class MessageService {
         String channelType = channel.getChannelType();
 
         // --- SERVER-SIDE SECURITY GUARD (THE BOUNCER) ---
-        
-       // --- SERVER-SIDE SECURITY GUARD (THE BOUNCER) ---
         String normalizedRole = roleName != null ? roleName.toUpperCase().replace("ROLE_", "") : "";
-        boolean isAdmin = normalizedRole.equals("CLUBADMIN") || normalizedRole.equals("ADMIN");
+        boolean isAdmin = normalizedRole.contains("ADMIN"); 
 
-        // Rule 1: Only ADMIN can post to GLOBAL channels
-        if ("GLOBAL".equals(channelType) && !isAdmin) {
-            throw new SecurityException("Access Denied: Only Admins can post global announcements.");
-        }
+        // (REMOVED RULE 1 FOR GLOBAL CHANNELS)
 
-        // Rule 2: Regular members cannot post in LEADERSHIP lounge
+        // Rule 1: Regular members cannot post in LEADERSHIP lounge
         boolean isLeadOrCoLead = normalizedRole.contains("LEAD") || normalizedRole.contains("CO");
         if ("LEADERSHIP".equals(channelType) && !isAdmin && !isLeadOrCoLead) {
             throw new SecurityException("Access Denied: Members cannot access the Leadership Lounge.");
         }
 
-        // Rule 3: Team channels are restricted to members of that specific team (unless Admin)
+        // Rule 2: Team channels are restricted to members of that specific team (unless Admin)
         if ("TEAM".equals(channelType) && !isAdmin) {
             if (sender.getTeam() == null || !sender.getTeam().getTeamId().equals(channel.getTeam().getTeamId())) {
                 throw new SecurityException("Access Denied: You do not belong to this team's chat.");
             }
         }
-        // ------------------------------------------------
-        // ------------------------------------------------
+       
 
         // If they pass the bouncer, save the message!
         Messages message = new Messages();
