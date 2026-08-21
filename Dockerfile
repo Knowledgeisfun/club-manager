@@ -2,7 +2,7 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
 COPY . .
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
 # Stage 2: Run the application
 FROM eclipse-temurin:17-jdk-alpine
