@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/teams")
-@CrossOrigin(origins = "http://localhost:5173") // ADDED THIS!
+@CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class TeamController {
 
     private final TeamsRepository teamsRepository;

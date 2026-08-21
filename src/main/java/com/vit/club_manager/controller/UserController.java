@@ -14,7 +14,7 @@
 
     @RestController 
     @RequestMapping("/api/users") 
-    @CrossOrigin(origins = "http://localhost:5173") // ADDED THIS!
+    @CrossOrigin(origins = "${app.cors.allowed-origins}")
     public class UserController {
 
         private final UserService userService;
