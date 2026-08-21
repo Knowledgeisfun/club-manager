@@ -1,6 +1,8 @@
 package com.vit.club_manager.config;
 
 import com.vit.club_manager.security.JwtAuthenticationFilter;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,7 +25,10 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-
+    
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
+    
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -57,7 +62,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 2. EXPLICIT ORIGIN: Allow your local React frontend
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); 
+       configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         
         // 3. ALLOWED METHODS: Added PATCH and made sure OPTIONS is here
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
