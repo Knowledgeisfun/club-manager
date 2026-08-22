@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/channels")
-@CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class MessageController {
 
     private final MessageService messageService;

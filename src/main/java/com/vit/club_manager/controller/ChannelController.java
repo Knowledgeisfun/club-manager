@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/channels")
-@CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class ChannelController {
 
     private final ChannelService channelService;
