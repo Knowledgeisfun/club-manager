@@ -17,7 +17,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.ArrayList;
 
 @Service 
 public class UserService {
@@ -81,7 +86,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO assignUserToTeam(Integer userId, Integer teamId) {
+    public UserResponseDTO assignUserToTeam(@NonNull Integer userId, Integer teamId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found", 
@@ -103,7 +108,7 @@ public class UserService {
     // ==========================================
 
     @Transactional
-    public void deleteUser(Integer id) {
+    public void deleteUser(@NonNull Integer id) {
         if (!usersRepository.existsById(id)) {
             throw new ResourceNotFoundException(
                 "User not found", 
@@ -176,8 +181,30 @@ public class UserService {
     // ==========================================
 
     public List<UserResponseDTO> getAllUsers() {
-        List<Users> allUsers = usersRepository.findAll();
-        return allUsers.stream()
+        // 1. Identify exactly who is making the request using the JWT Token
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        // 2. Fetch the current user from the database to see their role and team
+        Users currentUser = usersRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found", "Authentication error"));
+
+        String userRole = currentUser.getRole().getRoleName().toUpperCase();
+        List<Users> allowedUsers = new ArrayList<>();
+
+        // 3. The Security Logic: Admin vs Everyone Else
+        if (userRole.contains("ADMIN") || userRole.contains("CLUB_ADMIN")) {
+            // Admins get the master roster
+            allowedUsers = usersRepository.findAll();
+        } else {
+            // Team Leads, Co-Leads, and Members ONLY get their specific team roster
+            if (currentUser.getTeam() != null) {
+                allowedUsers = usersRepository.findByTeam(currentUser.getTeam());
+            } 
+            // If they don't have a team assigned yet, allowedUsers just remains empty!
+        }
+        
+        // 4. Convert the secure list into DTOs and return
+        return allowedUsers.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }

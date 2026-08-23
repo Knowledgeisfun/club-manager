@@ -18,6 +18,7 @@
 
         private final UserService userService;
 
+        //Dependency injection of UserService through constructor
         public UserController(UserService userService) {
             this.userService = userService;
         }
