@@ -1,49 +1,38 @@
 package com.vit.club_manager.controller;
 
-import com.vit.club_manager.dto.MessageRequestDTO;
-import com.vit.club_manager.dto.MessageResponseDTO;
-import com.vit.club_manager.service.MessageService;
-import jakarta.validation.Valid;
+import com.vit.club_manager.dto.ChatMessageDto;
+import com.vit.club_manager.model.ChatMessageDocument;
+import com.vit.club_manager.service.ChatMessageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/channels")
 public class MessageController {
 
-    private final MessageService messageService;
+    // Inject the new MongoDB service instead of the old legacy service
+    private final ChatMessageService chatMessageService;
 
-    public MessageController(MessageService messageService) {
-        this.messageService = messageService;
+    public MessageController(ChatMessageService chatMessageService) {
+        this.chatMessageService = chatMessageService;
     }
 
+    // Keep this endpoint: React uses it to load history when switching channels
     @GetMapping("/{channelId}/messages")
-    // FIX: Let all logged-in users fetch messages (Frontend hides rooms they shouldn't click)
     @PreAuthorize("isAuthenticated()") 
-    public ResponseEntity<List<MessageResponseDTO>> getChannelMessages(@PathVariable Integer channelId) {
-        List<MessageResponseDTO> messages = messageService.getMessagesByChannel(channelId);
-        return ResponseEntity.ok(messages);
-    }
-
-    @PostMapping("/{channelId}/messages")
-    // FIX: Let all logged-in users try to post. The Service will block them if they lack permissions!
-    @PreAuthorize("isAuthenticated()") 
-    public ResponseEntity<MessageResponseDTO> postMessage(
-            @PathVariable Integer channelId, 
-            @RequestBody @Valid MessageRequestDTO requestDTO) {
-        
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        MessageResponseDTO savedMessage = messageService.postMessage(
-                channelId, 
-                currentUserEmail, 
-                requestDTO.getContent()
-        );
-        
-        return ResponseEntity.status(201).body(savedMessage);
-    }
+    public ResponseEntity<List<ChatMessageDto>> getChannelMessages(
+        @PathVariable Long channelId,
+        // The new optional parameter React will send when scrolling up
+        @RequestParam(required = false) Instant beforeTimestamp) {
+    
+    List<ChatMessageDto> messages = chatMessageService.getChannelHistory(channelId, beforeTimestamp);
+    return ResponseEntity.ok(messages);
+}
+    
+    // DELTED: @PostMapping("/{channelId}/messages")
+    // STOMP WebSockets now handle all message publishing, not HTTP POST!
 }

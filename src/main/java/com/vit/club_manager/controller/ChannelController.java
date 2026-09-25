@@ -10,6 +10,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+    /**
+     * Controller managing access to chat channels and lounges.
+     * 
+     * Workflow:
+     * 1. Security Gate: @PreAuthorize ensures only authenticated users with valid JWTs can hit this endpoint.
+     * 2. Stateless Identity: Leverages @AuthenticationPrincipal to extract the user's identity directly from the SecurityContext (no JSON payload required).
+     * 3. Role-Based Access Control (RBAC): Delegates to ChannelService to query the database and filter available channels based on the user's specific role (e.g., Member vs. Admin).
+     * 4. Response: Returns a tailored List of ChannelResponseDTOs containing only the groups this specific user is authorized to view.
+     */
 @RestController
 @RequestMapping("/api/channels")
 public class ChannelController {

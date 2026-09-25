@@ -86,7 +86,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO assignUserToTeam(@NonNull Integer userId, Integer teamId) {
+    public UserResponseDTO assignUserToTeam(@NonNull Integer userId, @NonNull Integer teamId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found", 
